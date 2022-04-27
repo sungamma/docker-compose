@@ -84,7 +84,8 @@ services:
       - /volume1/movie:/volume1/movie
       - /volume2/movie2:/volume2/movie2
     restart: unless-stopped
-services:
+
+
   nas-tools:
     image: jxxghp/nas-tools:latest
  #   ports:
