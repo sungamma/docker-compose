@@ -1,0 +1,167 @@
+---
+version: "3.2"
+
+services:
+  sonarr3:
+    image: linuxserver/sonarr
+    # port is 8989
+    privileged: True
+    restart: unless-stopped
+    volumes:
+      - /volume1/docker/sonarr:/config
+      - /volume1/movie:/volume1/movie
+    network_mode: host
+    environment:
+      - PUID=1027  # ssh    id id
+      - PGID=100
+      - TZ=Asia/Shanghai
+      - UMASK=022
+
+
+  radarr3:
+    image: linuxserver/radarr:nightly
+    # port is 7878
+    privileged: True
+    restart: unless-stopped
+    volumes:
+      - /volume1/docker/radarr:/config
+      - /volume1/movie:/volume1/movie
+    network_mode: host
+    environment:
+      - PUID=1027
+      - PGID=100
+      - TZ=Asia/Shanghai
+      - UMASK=022
+
+
+  prowlarr3:
+    image: linuxserver/prowlarr:develop
+    # port is 9696
+    privileged: True
+    restart: unless-stopped
+    volumes:
+      - /volume1/docker/prowlarr:/config
+      - /volume1/movie:/volume1/movie
+    network_mode: host
+    environment:
+      - PUID=1027
+      - PGID=100
+      - TZ=Asia/Shanghai
+      - UMASK=022
+      
+  organizr:
+    image: organizr/organizr:latest
+    privileged: True
+    volumes:
+      - /volume1/docker/organizr:/config
+    environment:
+      - PUID=1027
+      - PGID=100
+      - TZ=Asia/Shanghai
+      - UMASK=022
+    ports:
+      - 8255:80  #没办法用host,不知道怎么改默认端口，只能bridge
+    restart: unless-stopped
+    networks:
+      mynet:
+        ipv4_address: 172.18.0.4
+        
+  jellyfinQSV:
+    image: nyanmisaka/jellyfin
+    # port is 8096
+    privileged: true
+    network_mode: host
+    environment:
+      - PUID=1027
+      - PGID=100
+      - TZ=Asia/Shanghai
+      - HTTP_PROXY=127.0.0.1:8019  #代理
+      - HTTPS_PROXY=127.0.0.1:8019   #代理
+      - NO_PROXY=localhost,127.0.0.1
+    volumes:
+      - /volume1/docker/jellyfinQSV/config:/config
+      - /volume1/docker/jellyfinQSV/cache:/cache
+      - /volume1/movie:/volume1/movie
+      - /volume2/movie2:/volume2/movie2
+    restart: unless-stopped
+services:
+  nas-tools:
+    image: jxxghp/nas-tools:latest
+ #   ports:
+  #    - 3005:3005       
+    volumes:
+      - /volume1/docker/nastools:/config 
+      - /volume1/movie:/volume1/movie
+      - /volume2/movie2:/volume2/movie2 
+    environment: 
+      - PUID=1027    
+      - PGID=100   
+      - UMASK=022 
+      - NASTOOL_AUTO_UPDATE=true
+    restart: always
+    network_mode: host
+    hostname: nas-tools
+    container_name: nas-tools1
+    
+#   transmission:
+#     image: linuxserver/transmission
+#     # port is 9091
+#     # container_name: transmission
+#     privileged: true
+#     network_mode: host
+#     environment:
+#       - PUID=1027
+#       - PGID=101
+#       - TZ=Asia/shanghai
+#       - TRANSMISSION_WEB_HOME=/transmission-web-control/ #optional
+#       - USER=xxxx #optional
+#       - PASS=xxxx #optional
+#  #     - WHITELIST=127.0.0.1,192.168.2.*,192.168.1.*,::1 #optional      
+#       #- HOST_WHITELIST=dnsnane list #optional
+#     volumes:
+#       - /volume1/docker/transmission:/config
+#       - /volume1/movie:/volume1/movie
+#     restart: unless-stopped
+
+
+
+  qbittorrent:
+    image: linuxserver/qbittorrent
+    network_mode: host
+    environment:
+      - PUID=1027
+      - PGID=100
+      - TZ=Asia/Shanghai
+      - WEBUI_PORT=8080
+    volumes:
+      - /volume1/docker/qbittorrent:/config
+      - /volume1/movie:/volume1/movie
+    restart: unless-stopped      
+    # to enable remote webui,change the config foder:qBittorrent.conf  item: WebUI\HostHeaderValidation=false
+    
+
+  ombi:
+    image: lscr.io/linuxserver/ombi
+    network_mode: host
+    # PORT IS 3579
+    environment:
+      - PUID=1027
+      - PGID=100
+      - TZ=Asia/Shanghai
+      - BASE_URL=/ombi
+      - HTTP_PROXY=127.0.0.1:8019
+      - HTTPS_PROXY=127.0.0.1:8019
+      - NO_PROXY=localhost,127.0.0.1
+    volumes:
+      - /volume1/docker/ombi:/config
+    restart: unless-stopped
+
+networks:
+  mynet:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: "172.18.0.0/24"
+    
+
