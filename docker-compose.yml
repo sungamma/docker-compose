@@ -157,6 +157,37 @@ services:
       - /volume1/docker/ombi:/config
     restart: unless-stopped
 
+  jackett:
+    image: linuxserver/jackett:latest
+    # port is 9117
+    privileged: True
+    restart: unless-stopped
+    volumes:
+      - /volume1/docker/jackett:/config
+    network_mode: host
+    container_name: jackett1
+    environment:
+      - PUID=1027
+      - PGID=100
+      - TZ=Asia/Shanghai
+      - UMASK=022
+
+
+  nginx-proxy-manager:
+    image: jlesage/nginx-proxy-manager
+#    network_mode: bridge #设定默认桥接网络名bridge
+    container_name: npm
+    restart: always
+    volumes:
+      - /volume1/docker/npm:/config
+    ports:
+      - "9080:8080"
+      - "8181:8181"    #管理端口  
+      - "4443:4443"    #https端口，利用路由的端口转发(socat转发v6地址到 192.168.2.100:4443)
+    networks:
+      mynet:
+        ipv4_address: 172.18.0.5
+      
 networks:
   mynet:
     driver: bridge
