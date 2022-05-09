@@ -4,6 +4,7 @@ version: "3.2"
 services:
   sonarr3:
     image: linuxserver/sonarr
+    container_name: sonarr3
     # port is 8989
     privileged: True
     restart: unless-stopped
@@ -20,6 +21,7 @@ services:
 
   radarr3:
     image: linuxserver/radarr:nightly
+    container_name: radarr3
     # port is 7878
     privileged: True
     restart: unless-stopped
@@ -36,6 +38,7 @@ services:
 
   prowlarr3:
     image: linuxserver/prowlarr:develop
+    container_name: prowlarr3
     # port is 9696
     privileged: True
     restart: unless-stopped
@@ -48,9 +51,27 @@ services:
       - PGID=100
       - TZ=Asia/Shanghai
       - UMASK=022
-      
+
+
+  jackett:
+    image: linuxserver/jackett:latest
+    # port is 9117
+    privileged: True
+    restart: unless-stopped
+    volumes:
+      - /volume1/docker/jackett:/config
+    network_mode: host
+    container_name: jackett1
+    environment:
+      - PUID=1027
+      - PGID=100
+      - TZ=Asia/Shanghai
+      - UMASK=022
+
+
   organizr:
     image: organizr/organizr:latest
+    container_name: organizr1
     privileged: True
     volumes:
       - /volume1/docker/organizr:/config
@@ -66,8 +87,10 @@ services:
       mynet:
         ipv4_address: 172.18.0.4
         
+        
   jellyfinQSV:
-    image: nyanmisaka/jellyfin
+    image: nyanmisaka/jellyfin  # 解决了硬解码与字体问题，中国特供版
+    container_name: jellyfin1
     # port is 8096
     privileged: true
     network_mode: host
@@ -87,9 +110,9 @@ services:
 
 
   nas-tools:
-    image: jxxghp/nas-tools:latest
- #   ports:
-  #    - 3005:3005       
+    image: sungamma/nas-tools:latest
+    container_name: nas-tools1
+# port is 3000     
     volumes:
       - /volume1/docker/nastools:/config 
       - /volume1/movie:/volume1/movie
@@ -98,16 +121,15 @@ services:
       - PUID=1027    
       - PGID=100   
       - UMASK=022 
-      - NASTOOL_AUTO_UPDATE=true
+      - NASTOOL_AUTO_UPDATE=false
     restart: always
     network_mode: host
     hostname: nas-tools
-    container_name: nas-tools1
     
 #   transmission:
 #     image: linuxserver/transmission
 #     # port is 9091
-#     # container_name: transmission
+#     container_name: transmission1
 #     privileged: true
 #     network_mode: host
 #     environment:
@@ -125,10 +147,10 @@ services:
 #     restart: unless-stopped
 
 
-
   qbittorrent:
     image: linuxserver/qbittorrent
     network_mode: host
+    container_name: qbittorrent1
     environment:
       - PUID=1027
       - PGID=100
@@ -144,6 +166,7 @@ services:
   ombi:
     image: lscr.io/linuxserver/ombi
     network_mode: host
+    container_name: ombi1
     # PORT IS 3579
     environment:
       - PUID=1027
@@ -157,26 +180,11 @@ services:
       - /volume1/docker/ombi:/config
     restart: unless-stopped
 
-  jackett:
-    image: linuxserver/jackett:latest
-    # port is 9117
-    privileged: True
-    restart: unless-stopped
-    volumes:
-      - /volume1/docker/jackett:/config
-    network_mode: host
-    container_name: jackett1
-    environment:
-      - PUID=1027
-      - PGID=100
-      - TZ=Asia/Shanghai
-      - UMASK=022
-
 
   nginx-proxy-manager:
     image: jlesage/nginx-proxy-manager
 #    network_mode: bridge #设定默认桥接网络名bridge
-    container_name: npm
+    container_name: npm1
     restart: always
     volumes:
       - /volume1/docker/npm:/config
@@ -188,7 +196,8 @@ services:
       mynet:
         ipv4_address: 172.18.0.5
       
-networks:
+
+networks:   #自定义网络
   mynet:
     driver: bridge
     ipam:
