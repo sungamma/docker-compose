@@ -195,7 +195,25 @@ services:
     networks:
       mynet:
         ipv4_address: 172.18.0.5
-      
+
+  chinesesubfinder:
+    image: allanpk716/chinesesubfinder:latest
+    container_name: chinesesubfinder
+
+    volumes:
+      - /volume3/docker/chinesesubfinder/cache:/app/cache
+      - /volume3/docker/chinesesubfinder/config:/config
+
+      - /volume1/movie:/volume1/movie
+      - /volume2/movie2:/volume2/movie2
+    network_mode: host #19035 19037
+    environment:
+      - PUID=1026
+      - PGID=100
+      - TZ=Asia/Shanghai
+      #- PERMS=true  
+    restart: unless-stopped
+
 
 networks:   #自定义网络
   mynet:
